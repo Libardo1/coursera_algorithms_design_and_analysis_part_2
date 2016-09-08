@@ -29,9 +29,9 @@ def main(input_file, key='diff'):
         # sort by ratio in DECREASING order, how to break a tie doesn't matter
         res.sort(key=lambda x: x[0] / x[1], reverse=True)
 
-    print(list(map(lambda x: (x[1] - x[0], -x[0]), res)))
+    # print(list(map(lambda x: (x[1] - x[0], -x[0]), res)))
+    # print(res)
 
-    print(res)
     return compute_sum(res)
 
 
@@ -45,4 +45,6 @@ class Tests(unittest.TestCase):
         self.assertEqual(main('testcase3.txt', key='ratio'), 674634)
 
 if __name__ == "__main__":
+    print(main('jobs.txt'))
+    print(main('jobs.txt', key='ratio'))
     unittest.main()
