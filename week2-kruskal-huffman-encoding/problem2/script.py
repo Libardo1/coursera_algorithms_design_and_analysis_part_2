@@ -1,5 +1,7 @@
 import itertools
 import copy
+import unittest
+
 
 def read(input_file):
     nodes = []
@@ -47,14 +49,6 @@ def gen_neighbours(node):
 
     return neighbours
 
-    
-num_nodes, num_bits, nodes = read('clustering_big.txt')
-# num_nodes, num_bits, nodes = read('testcase1.txt')
-# num_nodes, num_bits, nodes = read('testcase2.txt')
-
-k = 0
-mapping = {}
-
 
 class Node(object):
     def __init__(self, data, parent=None, rank=0):
@@ -69,7 +63,8 @@ class Node(object):
         return '{0}'.format(self)
 
 
-def make_set(data):
+def make_set(data, mapping):
+    """mapping is used to store union find data"""
     n = Node(data)
     n.parent = n
     n.rank = 0
@@ -83,7 +78,7 @@ def find_set(node):
         return find_set(node.parent)
 
 
-def union(data1, data2):
+def union(data1, data2, mapping):
     n1 = mapping.get(data1)
     n2 = mapping.get(data2)
 
@@ -103,40 +98,38 @@ def union(data1, data2):
     return True
 
 
-print('initializing sets for each vertex')
-for n in nodes:
-    make_set(n)
+def main(input_file):
+    num_nodes, num_bits, nodes = read(input_file)
+    mapping = {}
+
+    print('initializing sets for each vertex')
+    for n in nodes:
+        make_set(n, mapping)
+
+    print('union neighbours')
+    for k, n in enumerate(nodes):
+        neighbours = gen_neighbours(n)
+        for ne in neighbours:
+            if ne in mapping:
+                union(n, ne, mapping)
+        if (k + 1) % 1000 == 0:
+            print('{0} nodes have been processed'.format(k + 1))
+
+    print('calculating number of clusters')
+    clusters = set()
+    for i in mapping.values():
+        clusters.add(find_set(i))
+
+    # return number of clusters
+    return len(clusters)
 
 
-print('union neighbours')
-for k, n in enumerate(nodes):
-    neighbours = gen_neighbours(n)
-    for ne in neighbours:
-        if ne in mapping:
-            union(n, ne)
-    if (k + 1) % 1000 == 0:
-        print('{0} nodes have been processed'.format(k + 1))
-    
+class Tests(unittest.TestCase):
+    def test(self):
+        self.assertEqual(main('testcase1.txt'), 7)
+        self.assertEqual(main('testcase2.txt'), 4)
 
-print('calculating number of clusters')
-cs = set()
-for i in mapping.values():
-    cs.add(find_set(i))
 
-print(len(cs))
-
-# while nodes:
-#     print(len(nodes))
-#     n = nodes.pop(0)
-#     k += 1
-#     neighbours = gen_neighbours(n)
-#     for ne in neighbours:
-#         try:
-#             idx = nodes.index(ne)
-#             print('found {0}'.format(ne))
-#         except ValueError as _:
-#             pass
-#         else:
-#             nodes.pop(idx)
-
-# print(k)
+if __name__ == "__main__":
+    print(main('clustering_big.txt'))
+    # unittest.main()
